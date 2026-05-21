@@ -25,7 +25,7 @@ export default defineConfig({
 
 **Type:** `String | Function`
 **Default:** `'axios-functions'`
-**Options:** `angular`, `axios`, `axios-functions`, `react-query`, `svelte-query`, `vue-query`, `swr`, `zod`, `hono`, `fetch`, `mcp`
+**Options:** `angular`, `axios`, `axios-functions`, `react-query`, `svelte-query`, `vue-query`, `swr`, `zod`, `effect`, `hono`, `fetch`, `mcp`
 
 ```ts title="orval.config.ts"
 export default defineConfig({
@@ -1040,6 +1040,65 @@ Configure Zod datetime/time validation options. `dateTimeOptions` defaults to `{
 **Default:** `false`
 
 Append [`.brand()`](https://zod.dev/api?id=branded-types) to generated Zod schemas using the schema name as the brand identifier. For array request/response bodies, only the top-level array wrapper schema is branded — the exported `*Item` helper schema is not branded.
+
+---
+
+## override.effect
+
+Effect schema generation options:
+
+```ts title="orval.config.ts"
+export default defineConfig({
+  petstore: {
+    output: {
+      override: {
+        effect: {
+          strict: {
+            response: true,
+            query: true,
+            param: true,
+            header: true,
+            body: true,
+          },
+          generate: {
+            param: true,
+            body: true,
+            response: true,
+            query: true,
+            header: true,
+          },
+          generateEachHttpStatus: true,
+          useBrandedTypes: true,
+        },
+      },
+    },
+  },
+});
+```
+
+### strict
+
+**Type:** `Object`
+
+Enable strict mode for schemas.
+
+### generate
+
+**Type:** `Object`
+
+Control which schemas are generated.
+
+### useBrandedTypes
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Append `S.brand()` to generated Effect schemas using the schema name as the brand identifier. For array request/response bodies, only the top-level array wrapper schema is branded.
+
+<Callout type="info">
+If `override.effect` is not set, Orval falls back to matching values from `override.zod`.
+</Callout>
 
 ---
 
