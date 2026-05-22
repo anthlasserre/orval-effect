@@ -1,0 +1,45 @@
+name: Publish Standalone Orval
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version for the standalone tarball'
+        required: true
+      prerelease:
+        description: 'Mark the GitHub release as a prerelease'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Pack standalone Orval
+        run: bun run pack:orval:standalone -- --version "${{ inputs.version }}" --out-dir artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: orval-standalone-v${{ inputs.version }}
+          name: Orval standalone v${{ inputs.version }}
+          prerelease: ${{ inputs.prerelease }}
+          files: artifacts/*.tgz

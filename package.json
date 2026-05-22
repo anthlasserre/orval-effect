@@ -91,6 +91,7 @@
     "format:check": "prettier --check .",
     "format:staged": "lint-staged",
     "format:samples": "prettier --write samples",
+    "pack:orval:standalone": "bun scripts/pack-standalone-orval.mjs",
     "postinstall": "bun scripts/link-workspace-bins.mjs",
     "prepare": "husky",
     "commitlint": "commitlint",
