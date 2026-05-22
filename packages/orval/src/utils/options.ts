@@ -4,6 +4,7 @@ import { styleText } from 'node:util';
 
 import {
   type ConfigExternal,
+  type EffectOptions,
   FormDataArrayHandling,
   type GlobalMockOptions,
   type GlobalOptions,
@@ -26,6 +27,7 @@ import {
   type McpServerOptions,
   type Mutator,
   NamingConvention,
+  type NormalizedEffectOptions,
   type NormalizedHonoOptions,
   type NormalizedHookOptions,
   type NormalizedJsDocOptions,
@@ -38,6 +40,7 @@ import {
   type NormalizedOverrideOutput,
   type NormalizedQueryOptions,
   type NormalizedSchemaOptions,
+  type NormalizedZodOptions,
   type OperationOptions,
   type OptionsExport,
   OutputClient,
@@ -49,6 +52,7 @@ import {
   type QueryOptions,
   RefComponentSuffix,
   type SchemaOptions,
+  type ZodOptions,
 } from '@orval/core';
 import { getDefaultMockOptionsForType } from '@orval/mock';
 
@@ -118,6 +122,89 @@ function normalizeSchemasOption(
   return {
     path: normalizePath(schemas.path, workspace),
     type: schemas.type,
+  };
+}
+
+function normalizeZodOptions(
+  workspace: string,
+  zod?: ZodOptions,
+): NormalizedZodOptions {
+  return {
+    strict: {
+      param: zod?.strict?.param ?? false,
+      query: zod?.strict?.query ?? false,
+      header: zod?.strict?.header ?? false,
+      body: zod?.strict?.body ?? false,
+      response: zod?.strict?.response ?? false,
+    },
+    generate: {
+      param: zod?.generate?.param ?? true,
+      query: zod?.generate?.query ?? true,
+      header: zod?.generate?.header ?? true,
+      body: zod?.generate?.body ?? true,
+      response: zod?.generate?.response ?? true,
+    },
+    coerce: {
+      param: zod?.coerce?.param ?? false,
+      query: zod?.coerce?.query ?? false,
+      header: zod?.coerce?.header ?? false,
+      body: zod?.coerce?.body ?? false,
+      response: zod?.coerce?.response ?? false,
+    },
+    preprocess: {
+      ...(zod?.preprocess?.param
+        ? {
+            param: normalizeMutator(workspace, zod.preprocess.param),
+          }
+        : {}),
+      ...(zod?.preprocess?.query
+        ? {
+            query: normalizeMutator(workspace, zod.preprocess.query),
+          }
+        : {}),
+      ...(zod?.preprocess?.header
+        ? {
+            header: normalizeMutator(workspace, zod.preprocess.header),
+          }
+        : {}),
+      ...(zod?.preprocess?.body
+        ? {
+            body: normalizeMutator(workspace, zod.preprocess.body),
+          }
+        : {}),
+      ...(zod?.preprocess?.response
+        ? {
+            response: normalizeMutator(workspace, zod.preprocess.response),
+          }
+        : {}),
+    },
+    generateEachHttpStatus: zod?.generateEachHttpStatus ?? false,
+    useBrandedTypes: zod?.useBrandedTypes ?? false,
+    dateTimeOptions: zod?.dateTimeOptions ?? { offset: true },
+    timeOptions: zod?.timeOptions ?? {},
+  };
+}
+
+function normalizeEffectOptions(
+  effect?: EffectOptions | ZodOptions,
+): NormalizedEffectOptions {
+  return {
+    strict: {
+      param: effect?.strict?.param ?? false,
+      query: effect?.strict?.query ?? false,
+      header: effect?.strict?.header ?? false,
+      body: effect?.strict?.body ?? false,
+      response: effect?.strict?.response ?? false,
+    },
+    generate: {
+      param: effect?.generate?.param ?? true,
+      query: effect?.generate?.query ?? true,
+      header: effect?.generate?.header ?? true,
+      body: effect?.generate?.body ?? true,
+      response: effect?.generate?.response ?? true,
+    },
+    generateEachHttpStatus: effect?.generateEachHttpStatus ?? false,
+    useBrandedTypes: effect?.useBrandedTypes ?? false,
   };
 }
 
@@ -368,79 +455,10 @@ export async function normalizeOptions(
         mcp: normalizeMcpOptions(outputOptions.override?.mcp, workspace),
         jsDoc: normalizeJSDocOptions(outputOptions.override?.jsDoc),
         query: globalQueryOptions,
-        zod: {
-          strict: {
-            param: outputOptions.override?.zod?.strict?.param ?? false,
-            query: outputOptions.override?.zod?.strict?.query ?? false,
-            header: outputOptions.override?.zod?.strict?.header ?? false,
-            body: outputOptions.override?.zod?.strict?.body ?? false,
-            response: outputOptions.override?.zod?.strict?.response ?? false,
-          },
-          generate: {
-            param: outputOptions.override?.zod?.generate?.param ?? true,
-            query: outputOptions.override?.zod?.generate?.query ?? true,
-            header: outputOptions.override?.zod?.generate?.header ?? true,
-            body: outputOptions.override?.zod?.generate?.body ?? true,
-            response: outputOptions.override?.zod?.generate?.response ?? true,
-          },
-          coerce: {
-            param: outputOptions.override?.zod?.coerce?.param ?? false,
-            query: outputOptions.override?.zod?.coerce?.query ?? false,
-            header: outputOptions.override?.zod?.coerce?.header ?? false,
-            body: outputOptions.override?.zod?.coerce?.body ?? false,
-            response: outputOptions.override?.zod?.coerce?.response ?? false,
-          },
-          preprocess: {
-            ...(outputOptions.override?.zod?.preprocess?.param
-              ? {
-                  param: normalizeMutator(
-                    workspace,
-                    outputOptions.override.zod.preprocess.param,
-                  ),
-                }
-              : {}),
-            ...(outputOptions.override?.zod?.preprocess?.query
-              ? {
-                  query: normalizeMutator(
-                    workspace,
-                    outputOptions.override.zod.preprocess.query,
-                  ),
-                }
-              : {}),
-            ...(outputOptions.override?.zod?.preprocess?.header
-              ? {
-                  header: normalizeMutator(
-                    workspace,
-                    outputOptions.override.zod.preprocess.header,
-                  ),
-                }
-              : {}),
-            ...(outputOptions.override?.zod?.preprocess?.body
-              ? {
-                  body: normalizeMutator(
-                    workspace,
-                    outputOptions.override.zod.preprocess.body,
-                  ),
-                }
-              : {}),
-            ...(outputOptions.override?.zod?.preprocess?.response
-              ? {
-                  response: normalizeMutator(
-                    workspace,
-                    outputOptions.override.zod.preprocess.response,
-                  ),
-                }
-              : {}),
-          },
-          generateEachHttpStatus:
-            outputOptions.override?.zod?.generateEachHttpStatus ?? false,
-          useBrandedTypes:
-            outputOptions.override?.zod?.useBrandedTypes ?? false,
-          dateTimeOptions: outputOptions.override?.zod?.dateTimeOptions ?? {
-            offset: true,
-          },
-          timeOptions: outputOptions.override?.zod?.timeOptions ?? {},
-        },
+        zod: normalizeZodOptions(workspace, outputOptions.override?.zod),
+        effect: normalizeEffectOptions(
+          outputOptions.override?.effect ?? outputOptions.override?.zod,
+        ),
         swr: {
           generateErrorTypes: false,
           ...outputOptions.override?.swr,
@@ -723,6 +741,7 @@ function normalizeOperationsAndTags(
           query,
           angular,
           zod,
+          effect,
           ...rest
         },
       ]) => {
@@ -748,78 +767,9 @@ function normalizeOperationsAndTags(
                   query: normalizeQueryOptions(query, workspace, global.query),
                 }
               : {}),
-            ...(zod
-              ? {
-                  zod: {
-                    strict: {
-                      param: zod.strict?.param ?? false,
-                      query: zod.strict?.query ?? false,
-                      header: zod.strict?.header ?? false,
-                      body: zod.strict?.body ?? false,
-                      response: zod.strict?.response ?? false,
-                    },
-                    generate: {
-                      param: zod.generate?.param ?? true,
-                      query: zod.generate?.query ?? true,
-                      header: zod.generate?.header ?? true,
-                      body: zod.generate?.body ?? true,
-                      response: zod.generate?.response ?? true,
-                    },
-                    coerce: {
-                      param: zod.coerce?.param ?? false,
-                      query: zod.coerce?.query ?? false,
-                      header: zod.coerce?.header ?? false,
-                      body: zod.coerce?.body ?? false,
-                      response: zod.coerce?.response ?? false,
-                    },
-                    preprocess: {
-                      ...(zod.preprocess?.param
-                        ? {
-                            param: normalizeMutator(
-                              workspace,
-                              zod.preprocess.param,
-                            ),
-                          }
-                        : {}),
-                      ...(zod.preprocess?.query
-                        ? {
-                            query: normalizeMutator(
-                              workspace,
-                              zod.preprocess.query,
-                            ),
-                          }
-                        : {}),
-                      ...(zod.preprocess?.header
-                        ? {
-                            header: normalizeMutator(
-                              workspace,
-                              zod.preprocess.header,
-                            ),
-                          }
-                        : {}),
-                      ...(zod.preprocess?.body
-                        ? {
-                            body: normalizeMutator(
-                              workspace,
-                              zod.preprocess.body,
-                            ),
-                          }
-                        : {}),
-                      ...(zod.preprocess?.response
-                        ? {
-                            response: normalizeMutator(
-                              workspace,
-                              zod.preprocess.response,
-                            ),
-                          }
-                        : {}),
-                    },
-                    generateEachHttpStatus: zod.generateEachHttpStatus ?? false,
-                    useBrandedTypes: zod.useBrandedTypes ?? false,
-                    dateTimeOptions: zod.dateTimeOptions ?? { offset: true },
-                    timeOptions: zod.timeOptions ?? {},
-                  },
-                }
+            ...(zod ? { zod: normalizeZodOptions(workspace, zod) } : {}),
+            ...(effect || zod
+              ? { effect: normalizeEffectOptions(effect ?? zod) }
               : {}),
             ...(transformer
               ? { transformer: normalizePath(transformer, workspace) }
