@@ -6,7 +6,7 @@ export default defineConfig({
   ...baseConfig,
   entry: ['src/bin/orval.ts', 'src/index.ts'],
   exports: {
-    ...baseConfig.exports,
+    devExports: 'development',
     inlinedDependencies: false,
   },
   deps: {
